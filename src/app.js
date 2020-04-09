@@ -34,7 +34,7 @@ function verifyIsUuid(request, response, next) {
 app.use('/repositories/:id', verifyIsUuid)
 
 app.get('/repositories', (request, response) => {
-  return response.status(200).json({ repositories })
+  return response.status(200).json(repositories)
 })
 
 app.post('/repositories', verifyIsArray, (request, response) => {
