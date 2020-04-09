@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { uuid } = require('uuidv4')
+const { uuid, isUuid } = require('uuidv4')
 
 const app = express()
 
@@ -16,13 +16,25 @@ function verifyIsArray(request, response, next) {
     next()
   }
 
-  response.status(400)
-  return response.json({ message: 'The techs field needs to be an array :)' })
+  return response
+    .status(400)
+    .json({ message: 'The techs field needs to be an array :)' })
 }
 
+function verifyIsUuid(request, response, next) {
+  const { id } = request.params
+
+  if (isUuid(id)) {
+    next()
+  }
+
+  return response.status(400).json({ message: 'The Uuid is not valid :(' })
+}
+
+app.use('/repositories/:id', verifyIsUuid)
+
 app.get('/repositories', (request, response) => {
-  response.status(200)
-  return response.json({ repositories })
+  return response.status(200).json({ repositories })
 })
 
 app.post('/repositories', verifyIsArray, (request, response) => {
@@ -38,20 +50,28 @@ app.post('/repositories', verifyIsArray, (request, response) => {
       likes: 0,
     }
     repositories.push(repository)
-    response.status(200)
-    return response.json(repository)
+    return response.status(200).json(repository)
   }
 
-  response.status(400)
-  return response.json({ message: 'Fill the requested fields!' })
+  return response.status(400).json({ message: 'Fill the requested fields!' })
 })
 
 app.put('/repositories/:id', (request, response) => {
   // TODO
 })
 
-app.delete('/repositories/:id', (req, res) => {
-  // TODO
+app.delete('/repositories/:id', (request, response) => {
+  const { id } = request.params
+
+  const uuid = repositories.findIndex((element) => element.id === id)
+
+  if (uuid < 0) {
+    return response.status(400).json({ message: 'Repository not found!' })
+  }
+
+  repositories.splice(uuid, 1)
+
+  return response.status(200).send()
 })
 
 app.post('/repositories/:id/like', (request, response) => {
